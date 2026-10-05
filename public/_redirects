@@ -1,4 +1,5 @@
-# Proxy Google Drive usercontent requests directly from production origin without CORS blockage
+# Proxy Google Drive usercontent requests and folder view directly from production origin without CORS blockage
+/api/drive-folder  https://drive.google.com/embeddedfolderview?id=1Wy0fI8J6GbNNNmHGWiyrQeG2TYKa4en_  200!
 /api/drive/*  https://drive.usercontent.google.com/:splat  200!
 
 # SPA Fallback for client-side routing

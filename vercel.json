@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/drive-folder",
+      "destination": "https://drive.google.com/embeddedfolderview?id=1Wy0fI8J6GbNNNmHGWiyrQeG2TYKa4en_"
+    },
+    {
       "source": "/api/drive/:match*",
       "destination": "https://drive.usercontent.google.com/:match*"
     },

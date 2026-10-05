@@ -31,26 +31,110 @@ export const DRIVE_CONFIG = {
   }
 };
 
+let folderFilesMapPromise = null;
+let lastFolderFetchTime = 0;
+const FOLDER_MAP_TTL = 30000; // 30 seconds cache for folder directory discovery
+
+/**
+ * Dynamically queries the Google Drive folder to discover current file IDs in real-time.
+ * If a file was replaced, re-uploaded, or deleted, this discovers the new ID automatically.
+ */
+async function getFolderFilesMap() {
+  const now = Date.now();
+  if (folderFilesMapPromise && now - lastFolderFetchTime < FOLDER_MAP_TTL) {
+    return folderFilesMapPromise;
+  }
+
+  folderFilesMapPromise = (async () => {
+    const timestamp = Date.now();
+    const folderUrls = [
+      `/api/drive-folder?_t=${timestamp}`,
+      `https://drive.google.com/embeddedfolderview?id=1Wy0fI8J6GbNNNmHGWiyrQeG2TYKa4en_&_t=${timestamp}`
+    ];
+
+    for (const url of folderUrls) {
+      try {
+        const res = await fetch(url, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        });
+
+        if (res.ok) {
+          const html = await res.text();
+          const map = {};
+          // Match id="entry-[FILE_ID]" and flip-entry-title">[FILE_NAME]</div>
+          const regex = /id=["']entry-([a-zA-Z0-9_-]+)["'][\s\S]*?class=["']flip-entry-title["']>([^<]+)<\/div>/g;
+          let match;
+          while ((match = regex.exec(html)) !== null) {
+            const fileId = match[1];
+            const fileName = match[2].trim().toLowerCase();
+            map[fileName] = fileId;
+          }
+
+          if (Object.keys(map).length > 0) {
+            lastFolderFetchTime = Date.now();
+            return map;
+          }
+        }
+      } catch (err) {
+        // Fall back to candidate or static default IDs
+      }
+    }
+
+    return null;
+  })();
+
+  return folderFilesMapPromise;
+}
+
 /**
  * Fetch and parse a JSON file directly from Google Drive
  * Uses cache: "no-store" and cache-busting parameters to ensure fresh external data without stale local caches.
  */
 export async function fetchDriveJson(key) {
   const fileConfig = DRIVE_CONFIG.files[key];
-  if (!fileConfig || (!fileConfig.id && !fileConfig.url)) {
-    throw new Error(`${fileConfig?.fileName || key} does not exist or is unavailable in the Google Drive source.`);
+  if (!fileConfig) {
+    throw new Error(`Unknown endpoint key: ${key}`);
   }
 
-  const { id, fileName, url: customUrl } = fileConfig;
+  const { fileName, url: customUrl } = fileConfig;
+  let activeId = fileConfig.id;
+
+  // 1. Dynamic Auto-Discovery from Google Drive folder
+  try {
+    const folderMap = await getFolderFilesMap();
+    if (folderMap) {
+      const discoveredId = folderMap[fileName.toLowerCase()];
+      if (discoveredId) {
+        activeId = discoveredId;
+      } else {
+        // If folder was successfully read and this file does not exist in it, it was deleted!
+        throw new Error(`${fileName} is deleted or unavailable in Google Drive folder.`);
+      }
+    }
+  } catch (discoveryErr) {
+    if (discoveryErr.message && discoveryErr.message.includes('is deleted or unavailable')) {
+      throw discoveryErr;
+    }
+    // Otherwise gracefully fall back to activeId
+  }
+
+  if (!activeId && !customUrl) {
+    throw new Error(`${fileName} does not exist or is unavailable in the Google Drive source.`);
+  }
+
   const timestamp = Date.now();
 
   // URLs to attempt: custom direct URL first, then production proxy endpoint, followed by direct Drive
   const candidateUrls = [
     ...(customUrl ? [customUrl] : []),
-    ...(id ? [
-      `/api/drive/download?id=${id}&export=download&_t=${timestamp}`,
-      `https://drive.usercontent.google.com/download?id=${id}&export=download&_t=${timestamp}`,
-      `https://drive.google.com/uc?export=download&id=${id}&_t=${timestamp}`
+    ...(activeId ? [
+      `/api/drive/download?id=${activeId}&export=download&_t=${timestamp}`,
+      `https://drive.usercontent.google.com/download?id=${activeId}&export=download&_t=${timestamp}`,
+      `https://drive.google.com/uc?export=download&id=${activeId}&_t=${timestamp}`
     ] : [])
   ];
 
