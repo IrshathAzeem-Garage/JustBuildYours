@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" fill="none">
+  <rect width="800" height="500" fill="#EFECE6"/>
+  <rect x="40" y="40" width="720" height="420" rx="8" fill="#FFFFFF" stroke="#E5E3DE" stroke-width="1.5"/>
+  <!-- Window Bar -->
+  <line x1="40" y1="88" x2="760" y2="88" stroke="#E5E3DE" stroke-width="1.5"/>
+  <circle cx="68" cy="64" r="4" fill="#D6D3CC"/>
+  <circle cx="84" cy="64" r="4" fill="#D6D3CC"/>
+  <circle cx="100" cy="64" r="4" fill="#D6D3CC"/>
+  <rect x="260" y="56" width="280" height="16" rx="4" fill="#F7F6F2" stroke="#E5E3DE" stroke-width="1"/>
+  <text x="400" y="68" font-family="Inter, sans-serif" font-size="9" fill="#8C8983" text-anchor="middle">lumina-architects.studio</text>
+  <!-- Architectural Hero Content -->
+  <rect x="80" y="120" width="300" height="24" rx="3" fill="#111111"/>
+  <rect x="80" y="156" width="220" height="12" rx="2" fill="#8C8983"/>
+  <rect x="80" y="176" width="160" height="12" rx="2" fill="#D6D3CC"/>
+  <!-- Architectural grid drawings -->
+  <rect x="420" y="120" width="300" height="280" rx="6" fill="#F7F6F2" stroke="#E5E3DE"/>
+  <path d="M440 360 L540 220 L620 300 L700 180" stroke="#111111" stroke-width="2" fill="none"/>
+  <circle cx="540" cy="220" r="5" fill="#111111"/>
+  <circle cx="620" cy="300" r="5" fill="#111111"/>
+  <circle cx="700" cy="180" r="5" fill="#111111"/>
+  <rect x="440" y="140" width="120" height="16" rx="2" fill="#E5E3DE"/>
+  <!-- Left column cards -->
+  <rect x="80" y="240" width="140" height="160" rx="4" fill="#F7F6F2" stroke="#E5E3DE"/>
+  <rect x="240" y="240" width="140" height="160" rx="4" fill="#F7F6F2" stroke="#E5E3DE"/>
+  <line x1="95" y1="360" x2="160" y2="360" stroke="#111111" stroke-width="2"/>
+  <line x1="255" y1="360" x2="320" y2="360" stroke="#111111" stroke-width="2"/>
+</svg>
