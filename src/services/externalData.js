@@ -20,7 +20,7 @@ export const DRIVE_CONFIG = {
     },
     pricing: {
       url: import.meta.env.VITE_PRICING_URL || '',
-      id: import.meta.env.VITE_DRIVE_PRICING_ID || '1KTQUib8pmeW7yOwSqW-B34RearnwEWm4',
+      id: import.meta.env.VITE_DRIVE_PRICING_ID || '1m8aCkmkVacMGQKOy3HpNewk_bo6IKmgB',
       fileName: 'pricing.json'
     },
     madeByUs: {
