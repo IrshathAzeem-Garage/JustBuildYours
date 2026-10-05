@@ -9,18 +9,22 @@ export const DRIVE_CONFIG = {
   folderUrl: 'https://drive.google.com/drive/folders/1Wy0fI8J6GbNNNmHGWiyrQeG2TYKa4en_?usp=sharing',
   files: {
     whatWeBuild: {
+      url: import.meta.env.VITE_WHAT_WE_BUILD_URL || '',
       id: import.meta.env.VITE_DRIVE_WHAT_WE_BUILD_ID || '1qnDuOaVU1eeMtsF0RGDZrYMpR46K2K0c',
       fileName: 'what-we-build.json'
     },
     whatPeopleSay: {
+      url: import.meta.env.VITE_WHAT_PEOPLE_SAY_URL || '',
       id: import.meta.env.VITE_DRIVE_WHAT_PEOPLE_SAY_ID || '1BtahvBru2joXFm-Ae2IhbYyPmipZnWVM',
       fileName: 'what-people-say.json'
     },
     pricing: {
+      url: import.meta.env.VITE_PRICING_URL || '',
       id: import.meta.env.VITE_DRIVE_PRICING_ID || '1KTQUib8pmeW7yOwSqW-B34RearnwEWm4',
       fileName: 'pricing.json'
     },
     madeByUs: {
+      url: import.meta.env.VITE_MADE_BY_US_URL || '',
       id: import.meta.env.VITE_DRIVE_MADE_BY_US_ID || '1xTnsulNLR_lqe1p1cagyYIYnb20_z2bw',
       fileName: 'made-by-us.json'
     }
@@ -33,18 +37,21 @@ export const DRIVE_CONFIG = {
  */
 export async function fetchDriveJson(key) {
   const fileConfig = DRIVE_CONFIG.files[key];
-  if (!fileConfig || !fileConfig.id) {
+  if (!fileConfig || (!fileConfig.id && !fileConfig.url)) {
     throw new Error(`${fileConfig?.fileName || key} does not exist or is unavailable in the Google Drive source.`);
   }
 
-  const { id, fileName } = fileConfig;
+  const { id, fileName, url: customUrl } = fileConfig;
   const timestamp = Date.now();
 
-  // URLs to attempt strictly from Google Drive with cache-busting
+  // URLs to attempt: custom direct URL first, then production proxy endpoint, followed by direct Drive
   const candidateUrls = [
-    `/api/drive/download?id=${id}&export=download&_t=${timestamp}`,
-    `https://drive.usercontent.google.com/download?id=${id}&export=download&_t=${timestamp}`,
-    `https://drive.google.com/uc?export=download&id=${id}&_t=${timestamp}`
+    ...(customUrl ? [customUrl] : []),
+    ...(id ? [
+      `/api/drive/download?id=${id}&export=download&_t=${timestamp}`,
+      `https://drive.usercontent.google.com/download?id=${id}&export=download&_t=${timestamp}`,
+      `https://drive.google.com/uc?export=download&id=${id}&_t=${timestamp}`
+    ] : [])
   ];
 
   let lastError = null;
